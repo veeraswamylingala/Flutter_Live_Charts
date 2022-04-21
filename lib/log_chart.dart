@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:live_line_charts_sample/live_charts.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
