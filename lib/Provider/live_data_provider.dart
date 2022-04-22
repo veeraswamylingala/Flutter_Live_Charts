@@ -11,51 +11,63 @@ import 'package:live_line_charts_sample/utils.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class LiveDataProvider extends ChangeNotifier {
-  String? seletedGroup;
-  int selectedWindowSpan = 1;
+  //WINDOW SPAN----------
+  List<int> windowSpanItems = [1, 3, 5];
+  int _selectedWindowSpan = 1;
+  int get selectedwindowSpan => _selectedWindowSpan;
+  set setSelectedWidnowSpan(int value) {
+    _selectedWindowSpan = value;
+  }
 
-  List<String> get listOfGroups => _listOfGroups;
+  //GROUPS-----------------
   List<String> _listOfGroups = [];
+  List<String> get listOfGroups => _listOfGroups;
 
-//_selectedGroupData getter
+  //START AND STOP
+  bool _isGraphStopped = false;
+  bool get isGraphStopped => _isGraphStopped;
+  set graphStopped(bool value) {
+    _isGraphStopped = value;
+    notifyListeners();
+  }
+
+  //GROUP INFO-----------
+  List _selectedGroupData = [];
   List get selctedGroupData => _selectedGroupData;
-
-//_selectedGroupData setter
   set selctedGroupDataSet(List value) {
     _selectedGroupData = value;
   }
 
-  List _selectedGroupData = [];
-  List _controllers = [];
+  //SELECTED GROUP
+  late String _seletedGroup;
+  String get seletedGroup => _seletedGroup;
+  set setSelectedGroup(String value) {
+    _seletedGroup = value;
+  }
 
-//ChartSerirs
+  //CHART CONTROLLERS
+  final List _controllers = [];
+
+  //ChartSerirs
   List<LineSeries<ChartData, DateTime>> chartSeries = [];
 
   ///Chart DataSouce
   List<List<ChartData>> chartDatasource = [];
-
   List<GroupsModel> groupsData = [];
-  List<String> tagDAS1 = ["DAS1_IND_01", "DAS1_IND_02"];
-  List<String> tagDAS2 = ["DAS2_OK_01", "DAS2_OK_02"];
-  List<int> windowSpanItems = [1, 3, 5];
-
   late Timer _tagTimer;
 
-  ///timer
+  //START TIMER
   void startTimer(String selectedValue) {
     _tagTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       getSelectedGroupData(selectedValue);
     });
   }
 
-//Cancel TImer
+//CANCEL TIMER
   void cancelTimer() {
     _tagTimer.cancel();
     notifyListeners();
   }
-
-//UPdate Tags
-  void updateTagsData() {}
 
   //Fetching Groups Names API CAll--------------------------------------------------------------------------
   Future<List<GroupsModel>> getGroupsInfo() async {
@@ -71,9 +83,7 @@ class LiveDataProvider extends ChangeNotifier {
       // convert each item back to the original form using JSON decoding
       //GroupNames array which has group names
       _listOfGroups = uniqueJsonList;
-      if (seletedGroup == null) {
-        seletedGroup = listOfGroups[0];
-      }
+      _seletedGroup = listOfGroups[0];
       notifyListeners();
       // uniqueJsonList.map((item) => jsonDecode(item)).toList();
       groupsData = List<GroupsModel>.from(
@@ -92,54 +102,61 @@ class LiveDataProvider extends ChangeNotifier {
     return min + _random.nextInt(max - min).toDouble();
   }
 
-  //Fetching Groups Names API CAll--------------------------------------------------------------------------
+  //Fetching Group Data API CAll--------------------------------------------------------------------------
   Future<List<GroupsModel>> getSelectedGroupData(String selectedGroup) async {
-    print(selectedGroup);
     var response = await http.get(Uri.parse(
         Utils.fetchSelectedGroupData + selectedGroup.replaceAll('"', '')));
     if (response.statusCode == 200) {
-      print(response);
       _selectedGroupData = jsonDecode(response.body);
       //Work on Graph
       //if  series was not added
 
       if (chartDatasource.isEmpty) {
         //_selectedGroupData.length
-        for (var i = 0; i < 1; i++) {
+        for (var i = 0; i < listOfGroups.length; i++) {
           // DateTime tempDate = DateFormat("2002-02-27T14:00:00")
           //     .parse(_selectedGroupData[i]['timestamp']);
           ///_selectedGroupData[i]['fvalue']
-          chartDatasource
-              .add([ChartData(DateTime.now(), _getRandomInt(10, 100))]);
+          chartDatasource.add([]);
         }
         notifyListeners();
       } else {
+        print(_isGraphStopped);
         //_selectedGroupData.length
-        for (var i = 0; i < 1; i++) {
+        for (var i = 0; i < _selectedGroupData.length; i++) {
           // DateTime tempDate = DateFormat("2002-02-27T14:00:00")
           //     .parse(_selectedGroupData[i]['timestamp']);
           ///_selectedGroupData[i]['fvalue']
           chartDatasource[i]
               .add(ChartData(DateTime.now(), _getRandomInt(10, 100)));
+
           //Chart1 Datt update------
-          if (chartDatasource[i].length >= selectedWindowSpan * 60) {
-            chartDatasource[i].removeAt(0);
-            _controllers[i]?.updateDataSource(
-              addedDataIndexes: <int>[chartDatasource[i].length - 1],
-              removedDataIndexes: <int>[0],
-            );
-          } else {
-            _controllers[i]?.updateDataSource(
-              addedDataIndexes: <int>[chartDatasource[i].length - 1],
-            );
+          if (_isGraphStopped == false) {
+            if (chartDatasource[i].length >= _selectedWindowSpan * 60) {
+              chartDatasource[i].removeAt(0);
+              _controllers[i]?.updateDataSource(
+                addedDataIndexes: <int>[chartDatasource[i].length - 1],
+                removedDataIndexes: <int>[0],
+              );
+            } else {
+              _controllers[i]?.updateDataSource(
+                addedDataIndexes: <int>[chartDatasource[i].length - 1],
+              );
+            }
           }
         }
-        notifyListeners();
+        //When graph is stoped donot update the chart
+        if (_isGraphStopped == false) {
+          notifyListeners();
+        }
       }
 
       if (chartSeries.isEmpty) {
         //_selectedGroupData.length
-        for (var i = 0; i < 1; i++) {
+        for (var i = 0; i < _selectedGroupData.length; i++) {
+          final myInteger = _selectedGroupData[i]['PENCOLOR'];
+          final hexString = myInteger.toRadixString(16);
+          Color col = Color(int.parse(hexString, radix: 16));
           chartSeries.add(
             LineSeries<ChartData, DateTime>(
               onRendererCreated: (ChartSeriesController controller) {
@@ -149,19 +166,16 @@ class LiveDataProvider extends ChangeNotifier {
               name: _selectedGroupData[i]['POINTNAME'],
               // xAxisName: "DateTime",
               legendItemText: _selectedGroupData[i]['POINTNAME'],
-              color: Colors.redAccent,
+              color: col,
               xValueMapper: (ChartData sales, _) => sales.country,
               yValueMapper: (ChartData sales, _) => sales.sales,
-              // markerSettings: const MarkerSettings(
-              //     isVisible: true,
-              //     // Marker shape is set to diamond
-              //     shape: DataMarkerType.circle),
+
               animationDuration: 0,
             ),
           );
         }
       }
-    } else {}
+    }
     // notifyListeners();
     return groupsData;
   }
