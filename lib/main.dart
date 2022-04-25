@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:live_line_charts_sample/Provider/live_data_provider.dart';
-import 'package:live_line_charts_sample/data_table.dart';
-import 'package:live_line_charts_sample/live_charts.dart';
-import 'package:provider/provider.dart';
+import 'package:live_line_charts_sample/trends_page.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .whenComplete(() {
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -23,9 +26,16 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Live Charts Sample',
-        theme:
-            ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
-        home: LiveChart(),
+        // theme:
+        //     ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          textTheme: GoogleFonts.latoTextTheme(TextTheme()
+              //   Theme.of(context).textTheme,
+              // If this is not set, then ThemeData.light().textTheme is used.
+              ),
+        ),
+        home: const TrendsPage(),
       ),
     );
   }

@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:live_line_charts_sample/DataModel/groupModel.dart';
+import 'package:live_line_charts_sample/Model/groupModel.dart';
 import 'package:live_line_charts_sample/Provider/live_data_provider.dart';
 import 'package:live_line_charts_sample/utils.dart';
 import 'package:provider/provider.dart';
