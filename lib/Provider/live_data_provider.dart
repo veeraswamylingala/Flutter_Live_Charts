@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:live_line_charts_sample/Model/groupModel.dart';
 import 'dart:math' as math;
-
 import 'package:live_line_charts_sample/live_trend_page.dart';
 import 'package:live_line_charts_sample/utils.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -191,12 +191,48 @@ class LiveDataProvider extends ChangeNotifier {
       return null;
     }
   }
-}
 
-void showAlert(BuildContext context) {
-  showDialog(
-      context: context,
-      builder: (context) => const AlertDialog(
-            content: Text("hi"),
-          ));
+  Future<void> checkConeection(BuildContext context) async {
+    //Timer _timer = Timer.periodic(Duration(seconds: 2), (Timer timer) async {
+    print("Check Coneection Called");
+    try {
+      http.Response response =
+          await http.get(Uri.parse('https://www.google.co.in/'));
+      // .timeout(Duration(seconds: 5)
+      //   );
+      if (response.statusCode == 200) {
+        var snackBar = SnackBar(content: Text('Online'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        // do something
+      } else {
+        // handle it
+      }
+    } on TimeoutException catch (e) {
+      print('Timeout Error: $e');
+    } on SocketException catch (e) {
+      print('Socket Error---');
+      showAlert(context);
+      // var snackBar = SnackBar(content: Text('Offline'));
+      // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      print('Socket Error: $e');
+    } on Error catch (e) {
+      print('General Error: $e');
+    }
+    //   });
+  }
+
+  void showAlert(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Text("Server ERROR 505"),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text("OK"))
+              ],
+            ));
+  }
 }

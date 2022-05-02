@@ -15,13 +15,22 @@ class TrendsPage extends StatefulWidget {
 
 class _TrendsPageState extends State<TrendsPage> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   void dispose() {
-    Provider.of<LiveDataProvider>(context, listen: false).cancelTimer();
+    //Provider.of<LiveDataProvider>(context, listen: false).cancelTimer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Provider.of<LiveDataProvider>(context, listen: false)
+    //     .checkConeection(context);
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(

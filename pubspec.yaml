@@ -27,8 +27,10 @@ environment:
 # the latest version available son pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  connectivity_plus: ^2.3.0
   cupertino_icons: ^1.0.2
   date_field: ^3.0.0
+  flushbar: ^1.10.4
   flutter:
     sdk: flutter
   google_fonts: ^2.3.1
